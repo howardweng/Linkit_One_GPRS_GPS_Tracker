@@ -38,19 +38,18 @@ D. Position report by two trigger points.
  */
 
  
-//************************* Please change the following 3 essential credentials  *********************************************
+//************************* Please change the following 4 essential credentials  *********************************************
 
 char mqttBroker[] = "recorder.99101c17.svc.dockerapp.io";  //Change Mosquitto Host Name here. 
 int portNumber = 1883;       // Change the Mosquitto PORT Number here.
 
 String DeviceID = "GP";       // Optional change, only TWO characters or numbers allowed. this ID will display in maps of Owntracks APP. 
+#define mqttuser "howard"   //use "admin" account for login user name.  
 
 //*****************************************************************************************************************************
 
-
 //No need to change the following settings,if you followed instructions in NODE-Red setting. 
 
-#define mqttuser "howard"   //use "admin" account for login user name.  
 #define mqttpwd ""        //in our setting in Mosquitto, no password is needed. 
 
 #define chPrefix "owntracks"  // Temperay topic prefix 
