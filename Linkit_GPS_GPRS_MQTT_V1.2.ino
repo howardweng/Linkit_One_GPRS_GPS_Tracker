@@ -173,17 +173,17 @@ boolean printGPGGA(char* str, char* GPS_formatted)
     convertCoords(latitude,longitude,lat_fixed, lon_fixed,coord_size);
     
 
-    Serial.println(lat_fixed);                  // Late I need.
-    Serial.println(lon_fixed);                  // Late I need.
+    Serial.println(lat_fixed);                  // Latitude data will be used for device 
+    Serial.println(lon_fixed);                  // Longitude data will be used for device 
 
 float GPS_LAT_f = (float)atof(lat_fixed);
 float GPS_LON_f = (float)atof(lon_fixed);
    
-  GPS_LAT_f += 90;
-  GPS_LON_f += 180;
+  GPS_LAT_f += 90;                             //Plus 90 on Latitude, in case it is negative. Need to deduct from NODE-Red to return to correct data.
+  GPS_LON_f += 180;                            //Plus 180, on Longitude in case it is negative. Need to deduct from NODE-Red to return to correct data.
   
-  unsigned long GPS_LAT_i = GPS_LAT_f*10000;   
-  unsigned long GPS_LON_i = GPS_LON_f*10000;   
+  unsigned long GPS_LAT_i = GPS_LAT_f*10000;  //Times 10000 to get integer, need to devide 10000 at NODE-RED to return to correct data.  
+  unsigned long GPS_LON_i = GPS_LON_f*10000;   //Times 10000 to get integer, need to devide 10000 at NODE-RED to return to correct data.
 
 //Seperate GPS_LAT_i into 3* 8 bits(HEX) 
 
@@ -208,7 +208,7 @@ lora_trans[18] = (LBattery.level());
 return true;    
 }
 
-if ((millis()-MemoryMillis)>80000)
+if ((millis()-MemoryMillis)>80000)             // In case battery runs out under no GPS signal enviornment. Timer set 80 seconds of maximum time to search GPS signal. And it will stop for next trigger to search GPS again. 
     {
 
       nosignalled();
@@ -619,9 +619,14 @@ Vector norm = accelerometer.readNormalize();
 Activites activ = accelerometer.readActivites();
 
 
+// There are two ways to trigger the GPS. One is triggered by G Sensor, when the device is moving, this sensor will be activated, and I only want one location in 60seconds. 
+// When the device is not in motion, say, at night. It is not necessary to send data all the time, because the battery power is precious.So I would 
+
+
+
   if (activ.isActivity)
   {
-    if( millis()-lastSend > 20000 ) { // Send an update only after 60 seconds
+    if( millis()-lastSend > 60000 ) { // Send an update only after 60 seconds     //  First Trigger is to trigger GPS report by G-Sensor motion. for power saving purpose (also MQTT broker limitation), I would allow only one update within 60 second to prevent frequent unintended movements. 
     lastSend = millis();     
 
     Serial.println(" ");
@@ -639,7 +644,7 @@ Activites activ = accelerometer.readActivites();
   }
 
 
-if ((millis()-longtimewaiting)>3600000)
+if ((millis()-longtimewaiting)>3600000)      // Second trigger timing is to report GPS data regularly in 60 mins (1 hour). 
     {
       Serial.println(longtimewaiting);
       Serial.println(millis());
